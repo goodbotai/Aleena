@@ -17,11 +17,11 @@ def bulk(x):
     hey = requests.get('http://demotest:Admin123@46.101.51.199:8080/opensrp/rest/rapid/client/c?id=' + x)
     number = json.loads(hey.content)["client"]["phoneNo"]
     msg =  "Hi! Here is your Vaccination details." + "\n" + "penta1 = " + json.loads(hey.content)["vaccineCard"]["penta1"] + "\n" + "penta2 = " + json.loads(hey.content)["vaccineCard"]["penta2"]+ "\n" +"penta3 = " + json.loads(hey.content)["vaccineCard"]["penta3"]+ "\n" + "pcv1  = " + json.loads(hey.content)["vaccineCard"]["pcv1"]+ "\n" +"pcv2 = " + json.loads(hey.content)["vaccineCard"]["pcv2"]+ "\n" + "pcv3   = " + json.loads(hey.content)["vaccineCard"]["pcv3"]+ "\n" + "opv1 = " + json.loads(hey.content)["vaccineCard"]["opv1"]+ "\n" + "opv2  = " + json.loads(hey.content)["vaccineCard"]["opv2"]+ "\n" + "opv3 = " + json.loads(hey.content)["vaccineCard"]["opv3"]+ "\n" + "measles1 = " + json.loads(hey.content)["vaccineCard"]["measles1"]+ "\n" + "measles2 = " +json.loads(hey.content)["vaccineCard"]["measles2"] + "\n" + "bcg  =  " + json.loads(hey.content)["vaccineCard"]["bcg"]
-    
+        
     message = {
-        "urns": [
-                 "telegram:" + number,
-                 "tel:"+ number],
+            "urns": [
+                     "telegram:" + number,
+                     "tel:"+ number + "1"],
             "text": msg
     }
     return json.dumps({"valuee":msg})
@@ -47,23 +47,23 @@ def record_id():
 
 "fields": {
     "my_date": birth + time,
-        "penta1":"due",
-            "penta2":"due",
-                "penta3":"due",
-                    "measles1":"due",
-                        "measles2":"due",
-                            "bcg":"due",
-                                "penta1date":birth + time,
-                                    "penta2date":birth + time,
-                                        "penta3date":birth + time,
-                                            "measles1date":birth + time,
-                                                "measles2date":birth + time,
-                                                    "bcgdate":birth + time
-                                                        
-                                                    }
-                                                        }
+     "penta1":"due",
+     "penta2":"due",
+     "penta3":"due",
+     "measles1":"due",
+     "measles2":"due",
+     "bcg":"due",
+     "penta1date":birth + time,
+     "penta2date":birth + time,
+     "penta3date":birth + time,
+     "measles1date":birth + time,
+     "measles2date":birth + time,
+     "bcgdate":birth + time
 
-Run = request.form["run"]
+     }
+   }
+    
+    Run = request.form["run"]
     send = requests.post('https://rapidpro.ona.io/api/v1/contacts.json',json=lata, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
@@ -71,12 +71,12 @@ Run = request.form["run"]
         if (ID == key):
             health_dict[ID].append(id)
             found[0] = 1
-if (found[0] ==1):
-    found[0] = 0
+    if (found[0] ==1):
+        found[0] = 0
     else:
         health_dict[ID] = []
         health_dict[ID].append(id)
-return "ok"
+    return "ok"
 
 
 @app.route('/send', methods=['POST'])
@@ -90,20 +90,20 @@ def send_messages():
                 hey = requests.get('http://demotest:Admin123@46.101.51.199:8080/opensrp/rest/rapid/client/c?id=' + x )
                 number = json.loads(hey.content)["client"]["phoneNo"]
                 msg =  "Hi! you got this message because you have one or more vaccination due. Please consult a health worker to get the vaccines." + "\n" + "penta1 = " + json.loads(hey.content)["vaccineCard"]["penta1"] + "\n" + "penta2 = " + json.loads(hey.content)["vaccineCard"]["penta2"]+ "\n" +"penta3 = " + json.loads(hey.content)["vaccineCard"]["penta3"]+ "\n" + "pcv1  = " + json.loads(hey.content)["vaccineCard"]["pcv1"]+ "\n" +"pcv2 = " + json.loads(hey.content)["vaccineCard"]["pcv2"]+ "\n" + "pcv3   = " + json.loads(hey.content)["vaccineCard"]["pcv3"]+ "\n" + "opv1 = " + json.loads(hey.content)["vaccineCard"]["opv1"]+ "\n" + "opv2  = " + json.loads(hey.content)["vaccineCard"]["opv2"]+ "\n" + "opv3 = " + json.loads(hey.content)["vaccineCard"]["opv3"]+ "\n" + "measles1 = " + json.loads(hey.content)["vaccineCard"]["measles1"]+ "\n" + "measles2 = " +json.loads(hey.content)["vaccineCard"]["measles2"] + "\n" + "bcg  =  " + json.loads(hey.content)["vaccineCard"]["bcg"]
-                
+        
                 message = {
             "urns": [
                      "telegram:" + number,
                      "tel:" + number + "1"],
-                     "text": msg
-                     }
-                         
-                         for j in json.loads(hey.content)["vaccineCard"]:
-                             if (json.loads(hey.content)["vaccineCard"][j] == "due"):
-                                 vaccination_due = 1
-                                     if (vaccination_due == 1):
-                                         send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
-                                             vacination_due = 0
+            "text": msg
+                      }
+        
+                for j in json.loads(hey.content)["vaccineCard"]:
+                    if (json.loads(hey.content)["vaccineCard"][j] == "due"):
+                        vaccination_due = 1
+                if (vaccination_due == 1):
+                    send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+                    vacination_due = 0
     return "ok"
 
 
@@ -134,8 +134,8 @@ def vaccinate_penta1():
     "penta1": penta1date
     
     }
-    }
-    
+        }
+
     send = requests.post('https://rapidpro.ona.io/api/v1/contacts.json',json=lata, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     return "ok"
 
@@ -281,17 +281,17 @@ def specific_message():
                 hey = requests.get('http://demotest:Admin123@46.101.51.199:8080/opensrp/rest/rapid/client/c?id=' + x)
                 number = json.loads(hey.content)["client"]["phoneNo"]
                 msg =  val
-                
+        
                 message = {
             "urns": [
                      "telegram:" + number,
                      "tel:"+ number + "1"],
             "text": msg
         }
-            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+                send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
 
-
-return "ok"
+    
+    return "ok"
 
 
 @app.route('/locate', methods=['POST'])
@@ -327,7 +327,7 @@ def overpass_locate():
     post =requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params=da)
     lat = json.loads(post.content)['results'][0]['geometry']['location']['lat']
     long = json.loads(post.content)['results'][0]['geometry']['location']['lng']
-    res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"restaurant\"](around:500,"+str(lat)+"," + str(long)+");out;")
+    res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"restaurant\"](around:1000,"+str(lat)+"," + str(long)+");out;")
     length =  len(json.loads(res.content)['elements'])
     if (length ==0):
         dict = {"values":"We found no Restaurants near your location." }
@@ -346,7 +346,7 @@ def overpass_locate():
         van = json.loads(res.content)['elements'][1]['tags']['name']
         vans = json.loads(res.content)['elements'][2]['tags']['name']
         dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans }
-    
+
     return json.dumps(dict)
 
 
