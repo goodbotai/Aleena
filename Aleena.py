@@ -379,7 +379,9 @@ def overpass_locate():
         send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     return "ok"
 
-
+@app.errorhandler(500)
+def page_not_found():
+    print 500
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
 """print response.form"""
