@@ -321,15 +321,16 @@ def locate():
 
 @app.route('/locates', methods=['POST'])
 def overpass_locate():
-    Run = request.form["run"]
-    response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
-    ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
-    amenity = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['amenity'][0]
-    latlng= (eval(request.form["values"])[1]["value"]).split(" ", 1)[0]
-    res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"" + amenity + "\"](around:1000,"+latlng+");out;")
-    length =  len(json.loads(res.content)['elements'])
-    if (length ==0):
-        message = {
+    try:
+        Run = request.form["run"]
+        response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+        ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
+        amenity = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['amenity'][0]
+        latlng= (eval(request.form["values"])[1]["value"]).split(" ", 1)[0]
+        res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"" + amenity + "\"](around:1000,"+latlng+");out;")
+        length =  len(json.loads(res.content)['elements'])
+        if (length ==0):
+            message = {
         "urns": [
                  "telegram:" + ID
                  ],
@@ -337,11 +338,11 @@ def overpass_locate():
             }
                  
                  
-        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
-    elif (length ==1):
-        va = json.loads(res.content)['elements'][0]['tags']['name']
-        amen = json.loads(res.content)['elements'][0]['tags']['amenity']
-        message = {
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+        elif (length ==1):
+            va = json.loads(res.content)['elements'][0]['tags']['name']
+            amen = json.loads(res.content)['elements'][0]['tags']['amenity']
+            message = {
         "urns": [
                  "telegram:" + ID
                  ],
@@ -349,12 +350,12 @@ def overpass_locate():
                  }
                  
 
-        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
-    elif (length ==2):
-        va = json.loads(res.content)['elements'][0]['tags']['name']
-        amen = json.loads(res.content)['elements'][0]['tags']['amenity']
-        van = json.loads(res.content)['elements'][1]['tags']['name']
-        message = {
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+        elif (length ==2):
+            va = json.loads(res.content)['elements'][0]['tags']['name']
+            amen = json.loads(res.content)['elements'][0]['tags']['amenity']
+            van = json.loads(res.content)['elements'][1]['tags']['name']
+            message = {
         "urns": [
                  "telegram:" + ID
                  ],
@@ -362,26 +363,30 @@ def overpass_locate():
                  }
 
 
-        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
-    else:
-        va = json.loads(res.content)['elements'][0]['tags']['name']
-        amen = json.loads(res.content)['elements'][0]['tags']['amenity']
-        van = json.loads(res.content)['elements'][1]['tags']['name']
-        vans = json.loads(res.content)['elements'][2]['tags']['name']
-        message = {
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+        else:
+            va = json.loads(res.content)['elements'][0]['tags']['name']
+            amen = json.loads(res.content)['elements'][0]['tags']['amenity']
+            van = json.loads(res.content)['elements'][1]['tags']['name']
+            vans = json.loads(res.content)['elements'][2]['tags']['name']
+            message = {
         "urns": [
                  "telegram:" + ID
                  ],
             "text": amenity + "s found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans
         }
         
-        dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans }
-        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+            dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans }
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+    except:
+        return "500 error"
     return "ok"
 
 @app.errorhandler(500)
 def page_not_found():
-    print "ok"
+    return "500 error"
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+    app.run(host='0.0.0.0')
 """print response.form"""
+
+
