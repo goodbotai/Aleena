@@ -321,33 +321,63 @@ def locate():
 
 @app.route('/locates', methods=['POST'])
 def overpass_locate():
-    lengt = len(eval(request.form["values"]))
-    val = (eval(request.form["values"])[lengt-1]["value"])
-    da = {"query": val, "key":"AIzaSyD2y6sRKMVLiBD5atdDCNoYzAKABDFKCsk" }
-    post =requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params=da)
-    lat = json.loads(post.content)['results'][0]['geometry']['location']['lat']
-    long = json.loads(post.content)['results'][0]['geometry']['location']['lng']
-    res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"restaurant\"](around:1000,"+str(lat)+"," + str(long)+");out;")
+    Run = request.form["run"]
+    response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+    ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
+    amenity = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['amenity'][0]
+    latlng= (eval(request.form["values"])[1]["value"]).split(" ", 1)[0]
+    res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"" + amenity + "\"](around:1000,"+latlng+");out;")
     length =  len(json.loads(res.content)['elements'])
     if (length ==0):
-        dict = {"values":"We found no Restaurants near your location." }
+        message = {
+        "urns": [
+                 "telegram:" + ID
+                 ],
+            "text": "We found no " + amenity + " near your location"
+            }
+                 
+                 
+        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     elif (length ==1):
         va = json.loads(res.content)['elements'][0]['tags']['name']
         amen = json.loads(res.content)['elements'][0]['tags']['amenity']
-        dict = {"values":" Restaurants found near you:\n 1 - " + va }
+        message = {
+        "urns": [
+                 "telegram:" + ID
+                 ],
+            "text": amenity + "s found near you:\n 1 - " + va
+                 }
+                 
+
+        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     elif (length ==2):
         va = json.loads(res.content)['elements'][0]['tags']['name']
         amen = json.loads(res.content)['elements'][0]['tags']['amenity']
         van = json.loads(res.content)['elements'][1]['tags']['name']
-        dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van}
+        message = {
+        "urns": [
+                 "telegram:" + ID
+                 ],
+            "text ": amenity + "s found near you:\n 1 - " + va +"\n 2 - " + van
+                 }
+
+
+        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
     else:
         va = json.loads(res.content)['elements'][0]['tags']['name']
         amen = json.loads(res.content)['elements'][0]['tags']['amenity']
         van = json.loads(res.content)['elements'][1]['tags']['name']
         vans = json.loads(res.content)['elements'][2]['tags']['name']
+        message = {
+        "urns": [
+                 "telegram:" + ID
+                 ],
+            "text": amenity + "s found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans
+        }
+        
         dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans }
-
-    return json.dumps(dict)
+        send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+    return "ok"
 
 
 if __name__ == '__main__':
