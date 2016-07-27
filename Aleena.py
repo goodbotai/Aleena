@@ -5,7 +5,7 @@ import urllib
 import json
 import requests
 from collections import defaultdict
-time = " 11:55"
+time = " 11:00"
 vaccination_due = 0
 health_dict = dict()
 found = [0]
