@@ -1,11 +1,12 @@
 from flask import Flask, request
 from urlparse import urlparse
 from urlparse import parse_qs, urlparse
+from gevent.wsgi import WSGIServer
 import urllib
 import json
 import requests
 from collections import defaultdict
-time = " 11:00"
+time = " 11:55"
 vaccination_due = 0
 health_dict = dict()
 found = [0]
@@ -384,9 +385,9 @@ def overpass_locate():
 
 @app.errorhandler(500)
 def page_not_found():
+    
     return "500 error"
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    http_server = WSGIServer(('0.0.0.0', 5000), app)
+    http_server.serve_forever()
 """print response.form"""
-
-
