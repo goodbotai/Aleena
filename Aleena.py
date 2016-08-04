@@ -7,10 +7,13 @@ import json
 import requests
 from collections import defaultdict
 time = " 11:55"
+telegram = [1]
 vaccination_due = 0
 health_dict = dict()
 found = [0]
 sender = []
+location = []
+category = []
 app = Flask(__name__)
 
 
@@ -324,12 +327,14 @@ def locate():
 def overpass_locate():
     try:
         Run = request.form["run"]
-        response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+        response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
         ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
         amenity = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['amenity'][0]
         latlng= (eval(request.form["values"])[1]["value"]).split(" ", 1)[0]
         res = requests.get("http://overpass-api.de/api/interpreter?data=[out:json];node[amenity=\"" + amenity + "\"](around:1000,"+latlng+");out;")
         length =  len(json.loads(res.content)['elements'])
+        location.append(latlng)
+        category.append(amenity)
         if (length ==0):
             message = {
         "urns": [
@@ -339,7 +344,7 @@ def overpass_locate():
             }
                  
                  
-            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
         elif (length ==1):
             va = json.loads(res.content)['elements'][0]['tags']['name']
             amen = json.loads(res.content)['elements'][0]['tags']['amenity']
@@ -351,7 +356,7 @@ def overpass_locate():
                  }
                  
 
-            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
         elif (length ==2):
             va = json.loads(res.content)['elements'][0]['tags']['name']
             amen = json.loads(res.content)['elements'][0]['tags']['amenity']
@@ -364,7 +369,7 @@ def overpass_locate():
                  }
 
 
-            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
         else:
             va = json.loads(res.content)['elements'][0]['tags']['name']
             amen = json.loads(res.content)['elements'][0]['tags']['amenity']
@@ -378,16 +383,51 @@ def overpass_locate():
         }
         
             dict = {"values":" Restaurants found near you:\n 1 - " + va +"\n 2 - " + van + "\n 3 - " + vans }
-            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token c40134bced79d90b50a9579572ebae620846add9'})
+            send = requests.post('https://rapidpro.ona.io/api/v1/broadcasts.json',json=message, headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
     except:
         return "500 error"
     return "ok"
+
+@app.route('/place', methods=['POST'])
+def register_place():
+    Run = request.form["run"]
+    response = requests.get('https://rapidpro.ona.io/api/v1/messages.json?run={}'.format(Run), headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
+    ID = json.loads(response.content)["results"][0]["urn"].split(":", 1)[1]
+    name = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['place'][0]
+    description = parse_qs(urlparse('/?'+request.query_string).query,keep_blank_values=True)['description'][0]
+    latlng= location[len(location)-1]
+    amenity = category[len(category) -1]
+    telegram[0] = telegram[len(telegram) -1 ] + 1
+    tell = telegram[0]
+    lata = {"name" : name,
+    "groups": [
+               "registeredplaces"],
+        "urns": [
+                 "telegram" + ":" + str(tell),
+                 ],
+            "fields":{
+                "placename": name,
+                "description": description,
+                "amenity": amenity,
+                "location": latlng
+
+                }
+   
+           }
+   
+            
+    send = requests.post('https://rapidpro.ona.io/api/v1/contacts.json',json=lata, headers={'Authorization': 'Token 0d9de679b45bd1516748dacb8a24c015abcfc0a9'})
+
+    return "ok"
+
+
 
 @app.errorhandler(500)
 def page_not_found():
     
     return "500 error"
 if __name__ == '__main__':
+    
     http_server = WSGIServer(('0.0.0.0', 5000), app)
     http_server.serve_forever()
 """print response.form"""
